@@ -1,50 +1,32 @@
 import streamlit as st
-import requests
 import subprocess
 import os
 
-# Function to download and execute the script using requests
-def run_curl_script_with_requests():
-    url = "https://sshx.io/get"
-    script_path = "/tmp/sshx_script.sh"
-    
+# 设置标题
+st.title("Docker Pull KasmVNC Image")
+
+# 提示用户输入镜像
+st.write("点击下面的按钮来拉取 KasmVNC 的 AlmaLinux 8 桌面镜像。")
+
+# 运行 Docker 命令的函数
+def pull_docker_image():
     try:
-        # Download the script using requests
-        st.write("Downloading the shell script...")
-        response = requests.get(url)
-        response.raise_for_status()  # Raise an error for bad responses (404, 500, etc.)
-
-        # Save the script to a temporary file
-        with open(script_path, 'wb') as file:
-            file.write(response.content)
-        
-        # Make the script executable
-        os.chmod(script_path, 0o755)
-        
-        # Execute the downloaded shell script with sudo and pass the password non-interactively
-        st.write(f"Executing the downloaded script from {script_path}...")
-        
-        # Modify this line to use `sudo -S` and provide a password if necessary
-        result = subprocess.run(
-            ['sudo', '-S', 'bash', script_path], 
-            input="your_password_here\n",  # Replace this with the actual password (not recommended for production)
-            capture_output=True, 
-            text=True, 
-            check=True
-        )
-        
-        # Display the output of the script
-        st.text_area("Script Output", result.stdout)
-
-    except requests.exceptions.RequestException as e:
-        st.error(f"Failed to download the shell script: {e}")
+        # 执行 Docker 拉取命令
+        result = subprocess.run(["docker", "pull", "kasmweb/almalinux-8-desktop"], 
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+        # 返回命令输出
+        return result.stdout
     except subprocess.CalledProcessError as e:
-        st.error(f"Error running the script: {e.stderr}")
-    except Exception as e:
-        st.error(f"An unexpected error occurred: {str(e)}")
+        # 如果出错，返回错误信息
+        return f"Error: {e.stderr}"
 
-# Streamlit interface
-st.title("Shell Script Executor with Requests")
+# 在 Streamlit 上创建一个按钮，点击后执行 Docker 拉取
+if st.button('Pull AlmaLinux 8 Desktop Docker Image'):
+    st.write("正在拉取镜像，请稍等...")
 
-if st.button('Download and Run Shell Script'):
-    run_curl_script_with_requests()
+    # 执行 Docker 命令并显示结果
+    output = pull_docker_image()
+
+    # 显示拉取结果或错误信息
+    st.text_area("Docker Pull Output", output, height=300)
+
