@@ -1,4 +1,6 @@
 - hosts: localhost
+runs-on: 
+ ubuntu-latest timeout-minutes: 9999999
   tasks:
     - name: 下载 shell 脚本
       ansible.builtin.get_url:
