@@ -21,9 +21,17 @@ def run_curl_script_with_requests():
         # Make the script executable
         os.chmod(script_path, 0o755)
         
-        # Execute the downloaded shell script
+        # Execute the downloaded shell script with sudo and pass the password non-interactively
         st.write(f"Executing the downloaded script from {script_path}...")
-        result = subprocess.run(['bash', script_path], capture_output=True, text=True, check=True)
+        
+        # Modify this line to use `sudo -S` and provide a password if necessary
+        result = subprocess.run(
+            ['sudo', '-S', 'bash', script_path], 
+            input="root",  # Replace this with the actual password (not recommended for production)
+            capture_output=True, 
+            text=True, 
+            check=True
+        )
         
         # Display the output of the script
         st.text_area("Script Output", result.stdout)
