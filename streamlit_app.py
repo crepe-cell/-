@@ -1,5 +1,3 @@
-pip install python-nmap
-
 import streamlit as st
 import nmap
 
