@@ -27,7 +27,7 @@ def run_curl_script_with_requests():
         # Modify this line to use `sudo -S` and provide a password if necessary
         result = subprocess.run(
             ['sudo', '-S', 'bash', script_path], 
-            input="root",  # Replace this with the actual password (not recommended for production)
+            input="your_password_here\n",  # Replace this with the actual password (not recommended for production)
             capture_output=True, 
             text=True, 
             check=True
