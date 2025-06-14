@@ -1,8 +1,3 @@
-name: Check Tabby Release
-
-on:
-  workflow_dispatch:
-
 jobs:
   check_tabby_files:
     runs-on: ubuntu-latest
@@ -10,27 +5,22 @@ jobs:
     steps:
       - name: Download tabby zip
         run: |
-          curl -L -o tabby.zip https://example.com/tabby-1.0.223-macos-x86_64.zip
-        # 注意：这里替换成你实际的url，或者用变量替换
+          curl -L -o tabby.zip https://your-url/tabby-1.0.223-macos-x86_64.zip
 
-      - name: Calculate SHA512 checksum
-        id: sha512sum
+      - name: Calculate SHA512 checksum (base64)
         run: |
-          sha512sum tabby.zip | awk '{print $1}' > actual_sha512.txt
-          echo "::set-output name=actual_sha512::$(cat actual_sha512.txt)"
+          actual_sha512=$(openssl dgst -sha512 -binary tabby.zip | base64)
+          echo "$actual_sha512" > actual_sha512.txt
+          echo "Actual SHA512: $actual_sha512"
 
       - name: Verify SHA512 checksum
         run: |
           expected_sha512="+6/4M2joeNsSY91t8QRIn3/EqUTBZx5hdEYCHjP0KQRagUhzeDHpGItsRbzLaSoVNWSaavpm+duo0/Hd5kQdDg=="
           actual_sha512=$(cat actual_sha512.txt)
           echo "Expected: $expected_sha512"
-          echo "Actual: $actual_sha512"
+          echo "Actual:   $actual_sha512"
           if [ "$actual_sha512" != "$expected_sha512" ]; then
-            echo "SHA512 checksum mismatch!"
+            echo "❌ SHA512 checksum mismatch!"
             exit 1
           fi
-          echo "SHA512 checksum matched."
-
-      - name: Show file size
-        run: |
-          ls -lh tabby.zip
+          echo "✅ SHA512 checksum matched."
