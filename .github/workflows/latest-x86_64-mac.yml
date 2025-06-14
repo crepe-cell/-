@@ -1,26 +1,53 @@
+name: Verify Tabby Linux ARM64 Files
+
+on:
+  workflow_dispatch:
+
 jobs:
-  check_tabby_files:
+  verify-linux-arm64:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download tabby zip
+      - name: Download and verify files
         run: |
-          curl -L -o tabby.zip https://your-url/tabby-1.0.223-macos-x86_64.zip
+          echo "🚀 Starting download and SHA512 verification"
 
-      - name: Calculate SHA512 checksum (base64)
-        run: |
-          actual_sha512=$(openssl dgst -sha512 -binary tabby.zip | base64)
-          echo "$actual_sha512" > actual_sha512.txt
-          echo "Actual SHA512: $actual_sha512"
+          files=(
+            "tabby-1.0.223-linux-arm64.AppImage|cEV92bKjZVQWfCDnMDxjrAqw5zThvFAVCmUq7P6h1NZeitQGtvRTjMYkzuK12sYKNpf9Tm2FiIBcctdRhHTFWw==|148440627"
+            "tabby-1.0.223-linux-arm64.deb|ilhdCEUFDkKUaOReQ2yQnPDRPZ2LuPFZlc9RzuuQy+iI0NFn6RLAiYlAl3wg/CDtUdvRg7wGSvPC7Y/vfDEmmQ==|109775796"
+            "tabby-1.0.223-linux-arm64.rpm|WaD3vnLJX9ivTOzO04bZKD5GPVgLUc9ZiOP9C5REsjUmQlmqxHiDtVdL2kjiA4wXYjFwfcfqDqD6Q4sQcAJJnw==|95248833"
+            "tabby-1.0.223-linux-arm64.pacman|g04ehdY7JuW+g3ssEr08q9GhpsUEZhl9iRWlcGrzqEvt0FIkA219spNkOI85LlCmX1NvFVaA24HFw1UD0zUCJA==|98066008"
+          )
 
-      - name: Verify SHA512 checksum
-        run: |
-          expected_sha512="+6/4M2joeNsSY91t8QRIn3/EqUTBZx5hdEYCHjP0KQRagUhzeDHpGItsRbzLaSoVNWSaavpm+duo0/Hd5kQdDg=="
-          actual_sha512=$(cat actual_sha512.txt)
-          echo "Expected: $expected_sha512"
-          echo "Actual:   $actual_sha512"
-          if [ "$actual_sha512" != "$expected_sha512" ]; then
-            echo "❌ SHA512 checksum mismatch!"
-            exit 1
-          fi
-          echo "✅ SHA512 checksum matched."
+          base_url="https://your-server-or-cdn.example.com/"  # ❗修改成你的真实文件地址
+
+          for file in "${files[@]}"; do
+            IFS="|" read -r filename expected_sha512 expected_size <<< "$file"
+            echo "📥 Downloading: $filename"
+            curl -L -o "$filename" "${base_url}${filename}"
+
+            echo "🔐 Calculating SHA512 (base64)"
+            actual_sha512=$(openssl dgst -sha512 -binary "$filename" | base64)
+
+            echo "📦 Checking size"
+            actual_size=$(stat -c%s "$filename")
+
+            echo "✅ File: $filename"
+            echo "Expected SHA512 : $expected_sha512"
+            echo "Actual   SHA512 : $actual_sha512"
+            echo "Expected Size   : $expected_size"
+            echo "Actual   Size   : $actual_size"
+
+            if [[ "$actual_sha512" != "$expected_sha512" ]]; then
+              echo "❌ SHA512 mismatch for $filename!"
+              exit 1
+            fi
+
+            if [[ "$actual_size" != "$expected_size" ]]; then
+              echo "❌ Size mismatch for $filename!"
+              exit 1
+            fi
+
+            echo "✅ Passed: $filename"
+            echo "---------------------------------------------"
+          done
