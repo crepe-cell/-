@@ -6,7 +6,7 @@ st.title("📡 远程终端共享 - Tmate")
 # 启动 tmate 并获取共享链接
 if st.button("启动 tmate"):
     with st.spinner("正在启动 tmate..."):
-        process = subprocess.Popen(["tmate", "-F"], stdout=subprocess.PIPE, text=True)
+        process = subprocess.Popen(["tmate"], stdout=subprocess.PIPE, text=True)
         output, _ = process.communicate()
     
     if output:
