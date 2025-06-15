@@ -1,6 +1,7 @@
 requests
 paramiko
-platform
+platformdirs
+platformio
 sys
 streamlit
 streamlit_ace
