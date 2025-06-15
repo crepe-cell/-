@@ -1,41 +1,53 @@
 import streamlit as st
 import subprocess
 
-# 初始化会话状态
-if 'username' not in st.session_state:
-    st.session_state.username = ""
-if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = []
-
-def run_command(command):
+# **网络检测**
+def check_network():
     try:
-        # 执行命令并捕获输出
-        result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
-        return result.stdout
-    except subprocess.CalledProcessError as e:
-        return f"Error: {e}"
+        result = subprocess.run(["ping", "-c", "1", "8.8.8.8"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        return "网络连接正常" if result.returncode == 0 else "网络异常"
+    except Exception as e:
+        return f"错误: {e}"
 
-# Streamlit 应用
-st.title("Web 终端模拟")
-st.write("欢迎使用 Web 终端！请先输入您的名称。")
+st.set_page_config(layout="wide")
+st.title("网络终端 - 多终端支持")
 
-# 用户自定义名称
-if st.session_state.username == "":
-    st.session_state.username = st.text_input("请输入您的名称:", "")
-else:
-    # 显示聊天历史
-    for entry in st.session_state.chat_history:
-        st.text(entry)
+# **侧边栏 - 显示网络状态**
+status = check_network()
+st.sidebar.success(status) if status == "网络连接正常" else st.sidebar.error(status)
 
-    # 输入框用于输入命令
-    command = st.text_input("输入命令并按 Enter 执行:", "")
+# **终端管理**
+if "terminals" not in st.session_state:
+    st.session_state.terminals = []
+if "terminal_history" not in st.session_state:
+    st.session_state.terminal_history = {}
 
-    if command:
-        output = run_command(command)
-        st.session_state.chat_history.append(f"{st.session_state.username}: {command}")
-        st.session_state.chat_history.append(f"输出: {output}")
-        st.experimental_rerun()  # 重新运行以更新聊天历史
+# **添加终端**
+if st.button("➕ 创建终端"):
+    terminal_id = len(st.session_state.terminals) + 1
+    st.session_state.terminals.append(terminal_id)
+    st.session_state.terminal_history[terminal_id] = []
 
-# 显示聊天框
-if st.session_state.username:
-    st.text_area("聊天记录:", "\n".join(st.session_state.chat_history), height=300, disabled=True)
+# **显示终端**
+for i, terminal_id in enumerate(st.session_state.terminals):
+    with st.expander(f"终端 {terminal_id}"):
+        command = st.text_input(f"输入命令 (终端 {terminal_id}):", key=f"cmd_{terminal_id}")
+
+        if st.button(f"执行 (终端 {terminal_id})", key=f"exec_{terminal_id}"):
+            try:
+                output = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                result = output.stdout
+
+                # **保存历史**
+                st.session_state.terminal_history[terminal_id].append(f"$ {command}\n{result}")
+
+                # **显示所有历史**
+                st.text_area(f"命令输出 (终端 {terminal_id}):", "\n".join(st.session_state.terminal_history[terminal_id]), height=200)
+            except Exception as e:
+                st.error(f"命令执行失败: {e}")
+
+        # **关闭终端**
+        if st.button(f"❌ 关闭终端 {terminal_id}", key=f"close_{terminal_id}"):
+            del st.session_state.terminal_history[terminal_id]
+            st.session_state.terminals.pop(i)
+            st.experimental_rerun()
