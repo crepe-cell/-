@@ -1,88 +1,109 @@
 import streamlit as st
 import subprocess
+import paramiko
+import platform
+import sys
 
-# 会话状态存储用户名和聊天窗口显示状态及聊天记录
-if "username" not in st.session_state:
-    st.session_state.username = ""
-if "show_chat" not in st.session_state:
-    st.session_state.show_chat = False
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+# **检查并安装 `ping` (仅适用于 Linux)**
+def install_ping():
+    if platform.system() == "Linux":
+        try:
+            result = subprocess.run(["which", "ping"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:  # 未找到 ping
+                st.sidebar.warning("⚠️ 未检测到 `ping`，正在安装...")
+                subprocess.run(["sudo", "apt", "install", "-y", "iputils-ping"], check=True)
+                st.sidebar.success("✅ `ping` 安装完成！")
+        except Exception as e:
+            st.sidebar.error(f"❌ 安装 `ping` 失败: {e}")
 
-# 用户名输入逻辑（简易版）
-if not st.session_state.username:
-    st.write("请输入用户名：")
-    username_input = st.text_input("用户名")
-    if st.button("确认"):
-        if username_input.strip():
-            st.session_state.username = username_input.strip()
-            st.experimental_rerun()
-        else:
-            st.warning("用户名不能为空")
-else:
-    st.title(f"欢迎，{st.session_state.username}！Web 终端模拟")
+# **pip 升级**
+def upgrade_pip():
+    try:
+        result = subprocess.run([sys.executable, '-m', 'pip', 'install', '--upgrade', 'pip'], capture_output=True, text=True)
+        return result.stdout + result.stderr
+    except Exception as e:
+        return f"❌ pip 升级失败: {e}"
 
-# 聊天按钮，使用聊天气泡图标（Material icon: :material/chat:）
-if st.button("聊天", icon=":material/chat:"):
-    st.session_state.show_chat = not st.session_state.show_chat
+# **网络检测**
+def check_network():
+    try:
+        ping_cmd = ["ping", "-c", "1", "8.8.8.8"] if platform.system() != "Windows" else ["ping", "-n", "1", "8.8.8.8"]
+        result = subprocess.run(ping_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        return "🟢 网络连接正常" if result.returncode == 0 else "🔴 网络异常"
+    except Exception as e:
+        return f"⚠️ 错误: {e}"
 
-# 聊天窗口左下角固定样式
-st.markdown(
-    """
-    <style>
-    .chat-box {
-        position: fixed;
-        bottom: 60px;  /* 留出输入框空间 */
-        left: 20px;
-        width: 300px;
-        height: 340px;
-        background-color: #f0f2f6;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 10px;
-        overflow-y: auto;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 9999;
-        font-size: 14px;
-    }
-    .chat-input {
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        width: 300px;
-        z-index: 10000;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+# **页面设置**
+st.set_page_config(layout="wide", page_title="SSH 终端 - Tabby 模拟")
+st.markdown("""
+<style>
+    body { background-color: #1E1E1E; color: white; }
+    .stButton > button { background-color: #FF5733; color: white; border-radius: 5px; }
+    .stExpander { background-color: #252526; }
+</style>
+""", unsafe_allow_html=True)
 
-# 显示聊天窗口和输入框
-if st.session_state.show_chat:
-    st.markdown('<div class="chat-box">', unsafe_allow_html=True)
-    st.write("💬 伙伴聊天开始了！")
-    # 显示聊天记录
-    for msg in st.session_state.chat_history:
-        st.write(msg)
-    st.markdown('</div>', unsafe_allow_html=True)
+st.title("🚀 SSH 终端 - 模拟 Tabby & sshx.io")
 
-    # 聊天输入框固定在左下角，回车发送
-    chat_input = st.text_input("", key="chat_input", placeholder="输入消息并回车发送", label_visibility="collapsed")
-    if chat_input:
-        st.session_state.chat_history.append(f"你说: {chat_input}")
-        # 清空输入框
-        st.session_state.chat_input = ""
-        st.experimental_rerun()
+# **安装 `ping`**
+install_ping()
 
-# 命令行输入框
-if not st.session_state.show_chat:
-    command = st.text_input("输入命令并按 Enter 执行:", key="command_input")
-    if command:
-        def run_command(command):
+# **pip 升级按钮**
+if st.sidebar.button("⚡ 升级 pip"):
+    result = upgrade_pip()
+    st.sidebar.text_area("pip 升级结果:", result, height=150)
+
+# **侧边栏 - 网络状态显示**
+status = check_network()
+st.sidebar.success(status) if "网络连接正常" in status else st.sidebar.error(status)
+
+# **终端管理**
+if "terminals" not in st.session_state:
+    st.session_state.terminals = []
+if "terminal_history" not in st.session_state:
+    st.session_state.terminal_history = {}
+
+# **添加终端**
+if st.sidebar.button("➕ 创建终端"):
+    terminal_id = len(st.session_state.terminals) + 1
+    st.session_state.terminals.append(terminal_id)
+    st.session_state.terminal_history[terminal_id] = []
+
+# **显示所有终端**
+for i, terminal_id in enumerate(st.session_state.terminals):
+    with st.expander(f"🖥️ 终端 {terminal_id}"):
+        command = st.text_input(f"🔹 输入命令 (终端 {terminal_id}):", key=f"cmd_{terminal_id}")
+
+        if st.button(f"✅ 执行 (终端 {terminal_id})", key=f"exec_{terminal_id}"):
             try:
-                result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
-                return result.stdout
-            except subprocess.CalledProcessError as e:
-                return f"Error: {e}"
-        output = run_command(command)
-        st.text_area("命令输出:", output, height=300)
+                output = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                result = output.stdout.strip()
+
+                # **保存历史**
+                st.session_state.terminal_history[terminal_id].append(f"$ {command}\n{result}")
+
+                # **显示命令历史**
+                st.text_area(f"📜 命令历史 (终端 {terminal_id}):", "\n".join(st.session_state.terminal_history[terminal_id]), height=200)
+            except Exception as e:
+                st.error(f"⚠️ 命令执行失败: {e}")
+
+        # **SSH 连接**
+        ssh_host = st.text_input(f"🌍 SSH 服务器地址 (终端 {terminal_id}):", key=f"ssh_host_{terminal_id}")
+        ssh_user = st.text_input(f"👤 用户名 (终端 {terminal_id}):", key=f"ssh_user_{terminal_id}")
+        ssh_pass = st.text_input(f"🔑 密码 (终端 {terminal_id}):", key=f"ssh_pass_{terminal_id}", type="password")
+
+        if st.button(f"🔗 连接 SSH (终端 {terminal_id})", key=f"ssh_connect_{terminal_id}"):
+            try:
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                ssh.connect(ssh_host, username=ssh_user, password=ssh_pass, timeout=5)
+                st.success(f"✅ 成功连接到 {ssh_host}")
+                ssh.close()
+            except Exception as e:
+                st.error(f"❌ SSH 连接失败: {e}")
+
+        # **关闭终端**
+        if st.button(f"❌ 关闭终端 {terminal_id}", key=f"close_{terminal_id}"):
+            del st.session_state.terminal_history[terminal_id]
+            st.session_state.terminals.pop(i)
+            st.experimental_rerun()
