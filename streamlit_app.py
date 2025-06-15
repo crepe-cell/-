@@ -1,6 +1,21 @@
 import streamlit as st
 import subprocess
+import sys
 
+# 先升级 pip 和 streamlit（只执行一次，避免重复升级）
+if "upgraded" not in st.session_state:
+    try:
+        # 升级 pip
+        subprocess.run([sys.executable, "-m", "pip", "install", "--upgrade", "pip"], check=True)
+        # 升级 streamlit
+        subprocess.run([sys.executable, "-m", "pip", "install", "--upgrade", "streamlit"], check=True)
+        st.session_state.upgraded = True
+        st.experimental_rerun()  # 升级后重启应用
+    except Exception as e:
+        st.error(f"升级失败: {e}")
+        st.session_state.upgraded = False
+
+# 主应用逻辑
 if "username" not in st.session_state:
     st.session_state.username = ""
 
