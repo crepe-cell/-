@@ -1,16 +1,16 @@
 #!/bin/bash
 
-echo -e "\e[1;34m=====================================\e[0m"
-echo -e "\e[1;32m       System Information\e[0m"
-echo -e "\e[1;34m=====================================\e[0m"
+# 设置proot的路径和rootfs目录
+PROOT_BIN=$(which proot)
+ROOTFS_DIR="$HOME/ubuntu-rootfs"
 
-# 读取 /etc/os-release 并提取关键字段
-if [ -f /etc/os-release ]; then
-    . /etc/os-release
-    echo -e "\e[1;33mOS:\e[0m $NAME $VERSION"
+# 如果rootfs目录不存在，提示用户先下载或安装rootfs
+if [ ! -d "$ROOTFS_DIR" ]; then
+  echo "Ubuntu rootfs目录不存在，请先下载并解压Ubuntu rootfs到 $ROOTFS_DIR"
+  exit 1
 fi
 
-# 读取 /proc/version 获取内核信息
-echo -e "\e[1;33mKernel Version:\e[0m $(cat /proc/version | awk '{print $1, $2, $3}')"
-
-echo -e "\e[1;34m=====================================\e[0m"
+# 启动proot环境，挂载必要的系统目录
+$PROOT_BIN -R "$ROOTFS_DIR" \
+  -b /dev -b /proc -b /sys -b /tmp -b /etc/resolv.conf \
+  /bin/bash --login
