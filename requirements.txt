@@ -1,3 +1,4 @@
+pty
 requests
 paramiko
 platformdirs
