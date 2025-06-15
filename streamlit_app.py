@@ -13,11 +13,14 @@ def run_command(command):
 st.title("Bash 终端模拟")
 
 # 多行文本框，支持输入多条命令
-command = st.text_area("输入 Bash 命令（支持多行）:")
+command = st.text_area("输入 Bash 命令（支持多行）:", height=300)
 
-if st.button("执行命令"):
-    if command.strip():
-        output = run_command(command)
-        st.text_area("命令输出:", output, height=300)
-    else:
-        st.warning("请输入命令。")
+# 当文本框内容变化时执行命令
+if command.strip() and st.button("执行命令"):
+    output = run_command(command)
+    st.text_area("命令输出:", output, height=300)
+elif command.strip():
+    output = run_command(command)
+    st.text_area("命令输出:", output, height=300)
+else:
+    st.warning("请输入命令。")
