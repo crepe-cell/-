@@ -1,7 +1,7 @@
 import subprocess
 
 expected_sha256 = "f9ec2bcb6da70304c49ff331b965dde82e313b4aa354322000e42b0540e48c72"
-file_path = "my_script.py"
+file_path = "run.py"
 
 # 计算文件 SHA-256
 file_hash = calculate_sha256(file_path)
