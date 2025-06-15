@@ -11,28 +11,14 @@ def run_command(command):
 
 # Streamlit 应用
 st.title("Web 终端模拟")
-st.write("点击下方按钮开始聊天。")
+st.write("在下面的输入框中输入命令并点击执行。")
 
-# 创建一个聊天框
-if 'messages' not in st.session_state:
-    st.session_state.messages = []
+# 输入框用于输入命令
+command = st.text_input("输入命令:", "")
 
-# 聊天输入框
-def send_message():
-    if st.session_state.input_text:
-        command = st.session_state.input_text
+if st.button("执行"):
+    if command:
         output = run_command(command)
-        st.session_state.messages.append({"user": command, "bot": output})
-        st.session_state.input_text = ""
-
-# 悬浮窗聊天按钮
-if st.button("聊天"):
-    st.text_input("输入命令:", key="input_text", on_change=send_message)
-
-# 显示聊天记录
-for message in st.session_state.messages:
-    st.write(f"**你:** {message['user']}")
-    st.write(f"**输出:** {message['bot']}")
-
-# 提示用户使用 Enter 键发送消息
-st.write("按 Enter 键发送消息。")
+        st.text_area("命令输出:", output, height=300)
+    else:
+        st.warning("请输入一个命令。")
