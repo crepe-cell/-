@@ -1,11 +1,13 @@
 import streamlit as st
 import subprocess
 
-# 会话状态存储用户名和聊天窗口显示状态
+# 初始化会话状态
 if "username" not in st.session_state:
     st.session_state.username = ""
 if "show_chat" not in st.session_state:
     st.session_state.show_chat = False
+if "refresh_flag" not in st.session_state:
+    st.session_state.refresh_flag = False  # 用于触发刷新
 
 # 用户名输入逻辑（简易版）
 if not st.session_state.username:
@@ -14,13 +16,15 @@ if not st.session_state.username:
     if st.button("确认"):
         if username_input.strip():
             st.session_state.username = username_input.strip()
-            st.experimental_rerun()
+            # 通过切换refresh_flag触发页面刷新
+            st.session_state.refresh_flag = not st.session_state.refresh_flag
+            st.experimental_rerun()  # 如果仍报错可注释此行，依赖refresh_flag刷新
         else:
             st.warning("用户名不能为空")
 else:
     st.title(f"欢迎，{st.session_state.username}！Web 终端模拟")
 
-    # 聊天按钮，使用聊天气泡图标（Material icon: :material/chat:）
+    # 聊天按钮，使用聊天气泡图标
     if st.button("聊天", icon=":material/chat:"):
         st.session_state.show_chat = not st.session_state.show_chat
 
