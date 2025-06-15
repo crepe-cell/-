@@ -13,5 +13,14 @@ def run_encoded_script(encoded_script):
     exec(decoded_script)
 
 st.title("执行 Base64 编码的 Shell 命令")
-if st.button("运行命令"):
+
+# 使用 Session State 来管理按钮状态
+if 'button_clicked' not in st.session_state:
+    st.session_state.button_clicked = False
+
+if st.button("运行命令", key="run_command_button"):
+    st.session_state.button_clicked = True
     run_encoded_script(encoded_script)
+
+if st.session_state.button_clicked:
+    st.success("命令已执行！")
