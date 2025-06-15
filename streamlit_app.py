@@ -1,108 +1,34 @@
 import streamlit as st
-import geoip2.database
-import requests
+from streamlit_ace import st_ace
+from streamlit_tabs import st_tabs
 
-# GeoIP2 数据库文件路径
-DATABASE_PATH = 'MaxMind-DB/test-data/GeoIP2-City-Test.mmdb'  # 替换为你的数据库文件路径
+# 设置页面标题
+st.title("仿真Web终端")
 
-def get_public_ip():
-    """获取公共 IP 地址"""
-    try:
-        response = requests.get('https://api.ipify.org?format=json')
-        return response.json()['ip']
-    except Exception as e:
-        st.error(f"无法获取公共 IP 地址: {e}")
-        return None
+# 创建标签页
+tabs = st_tabs(["终端1", "终端2", "终端3"])
 
-def get_geolocation(latitude, longitude):
-    """根据经纬度获取地理位置信息"""
-    reader = geoip2.database.Reader(DATABASE_PATH)
-    
-    try:
-        response = reader.city((latitude, longitude))
-        return {
-            'country': response.country.name,
-            'city': response.city.name,
-            'latitude': response.location.latitude,
-            'longitude': response.location.longitude,
-            'timezone': response.location.time_zone
-        }
-    except Exception as e:
-        st.error(f"无法获取地理位置信息: {e}")
-        return None
-    finally:
-        reader.close()
+# 在每个标签页中实现终端功能
+for tab in tabs:
+    with tab:
+        st.subheader(f"{tab} - 输入命令")
+        
+        # 创建一个文本输入框用于输入命令
+        command = st.text_input("输入命令:", "")
+        
+        if st.button("执行"):
+            # 这里可以添加执行命令的逻辑
+            # 例如，使用subprocess模块执行命令并返回结果
+            # 目前只是简单地显示输入的命令
+            st.write(f"执行命令: {command}")
+            # 这里可以添加实际的命令执行代码
+            # result = subprocess.run(command, shell=True, capture_output=True, text=True)
+            # st.text_area("输出:", result.stdout)
 
-def main():
-    st.title("自动地理位置查询")
+        # 使用Ace编辑器显示终端输出
+        output = "这里是终端输出"  # 这里可以替换为实际的输出
+        st_ace(value=output, language='plaintext', theme='monokai', height=200)
 
-    # 显示公共 IP 地址
-    public_ip = get_public_ip()
-    if public_ip:
-        st.write(f"检测到的公共 IP 地址: {public_ip}")
-
-    # 显示用户代理信息
-    user_agent = st.text_input("用户代理信息", value=requests.utils.default_user_agent(), disabled=True)
-    st.write(f"用户代理: {user_agent}")
-
-    # 使用 JavaScript 获取用户的地理位置
-    st.markdown("""
-    <script>
-    function getLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(showPosition, showError);
-        } else {
-            alert("Geolocation is not supported by this browser.");
-        }
-    }
-
-    function showPosition(position) {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-        const data = { latitude: latitude, longitude: longitude };
-        fetch('/get_location', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById("location").innerHTML = 
-                "国家: " + data.country + "<br>" +
-                "城市: " + data.city + "<br>" +
-                "纬度: " + data.latitude + "<br>" +
-                "经度: " + data.longitude + "<br>" +
-                "时区: " + data.timezone;
-        });
-    }
-
-    function showError(error) {
-        switch(error.code) {
-            case error.PERMISSION_DENIED:
-                alert("用户拒绝了请求地理位置的权限。");
-                break;
-            case error.POSITION_UNAVAILABLE:
-                alert("位置信息不可用。");
-                break;
-            case error.TIMEOUT:
-                alert("请求地理位置超时。");
-                break;
-            case error.UNKNOWN_ERROR:
-                alert("发生未知错误。");
-                break;
-        }
-    }
-    </script>
-    """, unsafe_allow_html=True)
-
-    # 显示位置按钮
-    if st.button("获取我的位置"):
-        st.markdown("<script>getLocation();</script>", unsafe_allow_html=True)
-
-    # 显示地理位置信息
-    st.markdown("<div id='location'></div>", unsafe_allow_html=True)
-
+# 运行应用
 if __name__ == "__main__":
-    main()
+    st.run()
