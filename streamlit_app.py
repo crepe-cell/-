@@ -1,5 +1,9 @@
 import streamlit as st
 import subprocess
+import paramiko
+
+st.set_page_config(layout="wide")
+st.title("SSH 终端 - 模拟 sshx.io & Tabby")
 
 # **网络检测**
 def check_network():
@@ -9,10 +13,6 @@ def check_network():
     except Exception as e:
         return f"错误: {e}"
 
-st.set_page_config(layout="wide")
-st.title("网络终端 - 多终端支持")
-
-# **侧边栏 - 显示网络状态**
 status = check_network()
 st.sidebar.success(status) if status == "网络连接正常" else st.sidebar.error(status)
 
@@ -22,7 +22,7 @@ if "terminals" not in st.session_state:
 if "terminal_history" not in st.session_state:
     st.session_state.terminal_history = {}
 
-# **添加终端**
+# **创建终端**
 if st.button("➕ 创建终端"):
     terminal_id = len(st.session_state.terminals) + 1
     st.session_state.terminals.append(terminal_id)
@@ -45,6 +45,21 @@ for i, terminal_id in enumerate(st.session_state.terminals):
                 st.text_area(f"命令输出 (终端 {terminal_id}):", "\n".join(st.session_state.terminal_history[terminal_id]), height=200)
             except Exception as e:
                 st.error(f"命令执行失败: {e}")
+
+        # **SSH 连接**
+        ssh_host = st.text_input(f"SSH 服务器地址 (终端 {terminal_id}):", key=f"ssh_host_{terminal_id}")
+        ssh_user = st.text_input(f"用户名 (终端 {terminal_id}):", key=f"ssh_user_{terminal_id}")
+        ssh_pass = st.text_input(f"密码 (终端 {terminal_id}):", key=f"ssh_pass_{terminal_id}", type="password")
+
+        if st.button(f"连接 SSH (终端 {terminal_id})", key=f"ssh_connect_{terminal_id}"):
+            try:
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                ssh.connect(ssh_host, username=ssh_user, password=ssh_pass, timeout=5)
+                st.success(f"成功连接到 {ssh_host}")
+                ssh.close()
+            except Exception as e:
+                st.error(f"SSH 连接失败: {e}")
 
         # **关闭终端**
         if st.button(f"❌ 关闭终端 {terminal_id}", key=f"close_{terminal_id}"):
