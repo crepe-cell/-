@@ -1,9 +1,13 @@
 import streamlit as st
 import subprocess
 
+# 会话状态存储用户名和聊天窗口显示状态
 if "username" not in st.session_state:
     st.session_state.username = ""
+if "show_chat" not in st.session_state:
+    st.session_state.show_chat = False
 
+# 用户名输入逻辑（简易版）
 if not st.session_state.username:
     st.write("请输入用户名：")
     username_input = st.text_input("用户名")
@@ -16,12 +20,46 @@ if not st.session_state.username:
 else:
     st.title(f"欢迎，{st.session_state.username}！Web 终端模拟")
 
-    if st.button("ChatUI"):
-        st.write("开始与伙伴聊天...")
-        chat_input = st.text_input("输入消息并回车发送", key="chat_input")
-        if chat_input:
-            st.write(f"你说: {chat_input}")
-    else:
+    # 聊天按钮，使用聊天气泡图标（Material icon: :material/chat:）
+    if st.button("聊天", icon=":material/chat:"):
+        st.session_state.show_chat = not st.session_state.show_chat
+
+    # 聊天窗口左下角固定样式
+    st.markdown(
+        """
+        <style>
+        .chat-box {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 300px;
+            height: 400px;
+            background-color: #f0f2f6;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            overflow-y: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 9999;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # 显示聊天窗口
+    if st.session_state.show_chat:
+        chat_container = st.container()
+        with chat_container:
+            st.markdown('<div class="chat-box">', unsafe_allow_html=True)
+            st.write("💬 伙伴聊天开始了！")
+            chat_input = st.text_input("输入消息并回车发送", key="chat_input")
+            if chat_input:
+                st.write(f"你说: {chat_input}")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    # 命令行输入框
+    if not st.session_state.show_chat:
         command = st.text_input("输入命令并按 Enter 执行:", key="command_input")
         if command:
             def run_command(command):
