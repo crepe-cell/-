@@ -1,3 +1,5 @@
 streamlit
 geoip2
 requests
+streamlit-ace
+streamlit-tabs
