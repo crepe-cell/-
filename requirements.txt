@@ -2,7 +2,6 @@ requests
 paramiko
 platformdirs
 platformio
-sys
 streamlit
 streamlit_ace
 geoip2
