@@ -4,6 +4,18 @@ import paramiko
 import platform
 import sys
 
+# **检查并安装 `ping` (仅适用于 Linux)**
+def install_ping():
+    if platform.system() == "Linux":
+        try:
+            result = subprocess.run(["which", "ping"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if result.returncode != 0:  # 未找到 ping
+                st.sidebar.warning("⚠️ 未检测到 `ping`，正在安装...")
+                subprocess.run(["sudo", "apt", "install", "-y", "iputils-ping"], check=True)
+                st.sidebar.success("✅ `ping` 安装完成！")
+        except Exception as e:
+            st.sidebar.error(f"❌ 安装 `ping` 失败: {e}")
+
 # **pip 升级**
 def upgrade_pip():
     try:
@@ -12,7 +24,7 @@ def upgrade_pip():
     except Exception as e:
         return f"❌ pip 升级失败: {e}"
 
-# **网络检测函数**
+# **网络检测**
 def check_network():
     try:
         ping_cmd = ["ping", "-c", "1", "8.8.8.8"] if platform.system() != "Windows" else ["ping", "-n", "1", "8.8.8.8"]
@@ -32,6 +44,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("🚀 SSH 终端 - 模拟 Tabby & sshx.io")
+
+# **安装 `ping`**
+install_ping()
 
 # **pip 升级按钮**
 if st.sidebar.button("⚡ 升级 pip"):
