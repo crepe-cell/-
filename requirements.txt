@@ -5,4 +5,3 @@ platformio
 streamlit
 streamlit_ace
 geoip2
-base64
