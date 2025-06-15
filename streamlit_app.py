@@ -21,19 +21,18 @@ if 'messages' not in st.session_state:
 if st.session_state.user_name == "":
     st.session_state.user_name = st.text_input("请输入您的名称:", "")
     if st.session_state.user_name:
-        st.success(f"欢迎，{st.session_state.user_name}！请在下方输入命令并按 Enter 键发送。")
+        st.success(f"欢迎，{st.session_state.user_name}！请点击下方按钮开始聊天。")
 
-# 聊天输入框
-def send_message():
-    if st.session_state.input_text:
-        command = st.session_state.input_text
+# 聊天输入框和按钮
+if st.button("聊天"):
+    # 显示输入框
+    command = st.text_input("输入命令:", key="input_text")
+    
+    # 发送消息的功能
+    if command:
         output = run_command(command)
         st.session_state.messages.append({"user": command, "bot": output})
-        st.session_state.input_text = ""
-
-# 悬浮窗聊天按钮
-if st.button("聊天"):
-    st.text_input("输入命令:", key="input_text", on_change=send_message)
+        st.session_state.input_text = ""  # 清空输入框
 
 # 显示聊天记录
 if st.session_state.messages:
