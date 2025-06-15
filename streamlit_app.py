@@ -1,6 +1,7 @@
 import streamlit as st
 import geoip2.database
 import requests
+import googlemaps
 
 def get_public_ip():
     try:
@@ -30,6 +31,14 @@ def get_geolocation(ip_address):
     finally:
         reader.close()
 
+def get_location_details(latitude, longitude, gmaps):
+    try:
+        reverse_geocode_result = gmaps.reverse_geocode((latitude, longitude))
+        return reverse_geocode_result
+    except Exception as e:
+        st.error(f"无法获取详细位置信息: {e}")
+        return None
+
 def main():
     st.title("自动 IP 地理位置查询")
     
@@ -47,6 +56,14 @@ def main():
             st.write(f"纬度: {data['latitude']}")
             st.write(f"经度: {data['longitude']}")
             st.write(f"时区: {data['timezone']}")
+            
+            # 使用 Google Maps API 获取详细位置信息
+            gmaps = googlemaps.Client(key='YOUR_API_KEY')  # 替换为你的 Google Maps API 密钥
+            location_details = get_location_details(data['latitude'], data['longitude'], gmaps)
+            if location_details:
+                st.subheader("详细位置信息")
+                for result in location_details:
+                    st.write(result['formatted_address'])
         else:
             st.error("未找到该 IP 地址的信息。")
     else:
