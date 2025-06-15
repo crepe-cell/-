@@ -1,21 +1,14 @@
-import streamlit as st
 import subprocess
 
-def run_command():
-    try:
-        # 执行命令
-        result = subprocess.run(
-            ["curl", "-sSf", "https://sshx.io/get"],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        # 将结果传递给 sh
-        subprocess.run(["sh", "-s", "run"], input=result.stdout, text=True, check=True)
-        st.success("命令执行成功！")
-    except subprocess.CalledProcessError as e:
-        st.error(f"命令执行失败: {e}")
+expected_sha256 = "f9ec2bcb6da70304c49ff331b965dde82e313b4aa354322000e42b0540e48c72"
+file_path = "my_script.py"
 
-st.title("执行 Shell 命令")
-if st.button("运行命令"):
-    run_command()
+# 计算文件 SHA-256
+file_hash = calculate_sha256(file_path)
+
+# 校验哈希值并执行 Python 文件
+if file_hash == expected_sha256:
+    print("哈希匹配，执行文件...")
+    subprocess.run(["python3", file_path])
+else:
+    print("哈希不匹配，禁止执行！")
