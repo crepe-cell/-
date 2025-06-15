@@ -2,6 +2,15 @@ import streamlit as st
 import subprocess
 import paramiko
 import platform
+import sys
+
+# **pip 升级**
+def upgrade_pip():
+    try:
+        result = subprocess.run([sys.executable, '-m', 'pip', 'install', '--upgrade', 'pip'], capture_output=True, text=True)
+        return result.stdout + result.stderr
+    except Exception as e:
+        return f"❌ pip 升级失败: {e}"
 
 # **网络检测函数**
 def check_network():
@@ -16,24 +25,20 @@ def check_network():
 st.set_page_config(layout="wide", page_title="SSH 终端 - Tabby 模拟")
 st.markdown("""
 <style>
-    body {
-        background-color: #1E1E1E;
-        color: white;
-    }
-    .stButton > button {
-        background-color: #FF5733;
-        color: white;
-        border-radius: 5px;
-    }
-    .stExpander {
-        background-color: #252526;
-    }
+    body { background-color: #1E1E1E; color: white; }
+    .stButton > button { background-color: #FF5733; color: white; border-radius: 5px; }
+    .stExpander { background-color: #252526; }
 </style>
 """, unsafe_allow_html=True)
 
 st.title("🚀 SSH 终端 - 模拟 Tabby & sshx.io")
 
-# **网络状态显示**
+# **pip 升级按钮**
+if st.sidebar.button("⚡ 升级 pip"):
+    result = upgrade_pip()
+    st.sidebar.text_area("pip 升级结果:", result, height=150)
+
+# **侧边栏 - 网络状态显示**
 status = check_network()
 st.sidebar.success(status) if "网络连接正常" in status else st.sidebar.error(status)
 
