@@ -1,19 +1,24 @@
 import streamlit as st
 import subprocess
 
-def run_script():
+def run_command(command):
     try:
-        # 执行 curl 命令并运行下载的脚本
-        result = subprocess.run(['curl', '-sSf', 'https://sshx.io/get'], capture_output=True, text=True, check=True)
-        # 直接返回脚本的输出
+        # 执行命令并捕获输出
+        result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
         return result.stdout
     except subprocess.CalledProcessError as e:
         return f"Error: {e}"
 
 # Streamlit 应用
-st.title("自动化脚本执行")
-st.write("点击下面的按钮执行自动化脚本并显示结果")
+st.title("Web 终端模拟")
+st.write("在下面的输入框中输入命令并点击执行。")
 
-if st.button("执行脚本"):
-    script_output = run_script()
-    st.text(script_output)
+# 输入框用于输入命令
+command = st.text_input("输入命令:", "")
+
+if st.button("执行"):
+    if command:
+        output = run_command(command)
+        st.text_area("命令输出:", output, height=300)
+    else:
+        st.warning("请输入一个命令。")
