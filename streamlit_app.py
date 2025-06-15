@@ -7,7 +7,7 @@ def run_command(command):
         result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
         return result.stdout
     except subprocess.CalledProcessError as e:
-        return f"Error: {e}"
+        return f"Error: {e.stderr.strip()}"  # 返回更详细的错误信息
 
 # Streamlit 应用
 st.title("Web 终端模拟")
